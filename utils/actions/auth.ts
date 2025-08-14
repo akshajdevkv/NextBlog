@@ -13,10 +13,11 @@ export async function login(formData: FormData) {
   const { error } = await supabase.auth.signInWithPassword(data)
   if (error) {
     console.log(error)
-    redirect('/error')
+    // Redirect back to login with specific error message
+    redirect(`/login?error=${encodeURIComponent(error.message)}`)
   }
-  revalidatePath('/dashboard', 'page')
-  redirect('/dashboard')
+  revalidatePath('/home', 'page')
+  redirect('/home')
 }
 
 export async function logout() {
@@ -28,8 +29,8 @@ export async function logout() {
     redirect('/error')
   }
   
-  revalidatePath('/home', 'page')
-  redirect('/home')
+  revalidatePath('/login', 'page')
+  redirect('/login')
 }
 export async function signup(formData: FormData) {
   const supabase = await createClient()
@@ -48,10 +49,11 @@ export async function signup(formData: FormData) {
   const { error } = await supabase.auth.signUp(data)
   if (error) {
     console.log('❌ Signup error:', error)
-    redirect('/error')
+    // Redirect back to signup with specific error message
+    redirect(`/signup?error=${encodeURIComponent(error.message)}`)
   }
   
-  // revalidatePath() clears Next.js cache for '/dashboard' to ensure fresh data after authentication
-  revalidatePath('/dashboard', 'page')
-  redirect('/dashboard')
+  // revalidatePath() clears Next.js cache for '/home' to ensure fresh data after authentication
+  revalidatePath('/home', 'page')
+  redirect('/home')
 }
