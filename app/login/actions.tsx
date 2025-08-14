@@ -18,6 +18,19 @@ export async function login(formData: FormData) {
   revalidatePath('/dashboard', 'page')
   redirect('/dashboard')
 }
+
+export async function logout() {
+  const supabase = await createClient()
+  const { error } = await supabase.auth.signOut()
+  
+  if (error) {
+    console.log('❌ Logout error:', error)
+    redirect('/error')
+  }
+  
+  revalidatePath('/home', 'page')
+  redirect('/home')
+}
 export async function signup(formData: FormData) {
   const supabase = await createClient()
   // type-casting here for convenience
@@ -37,6 +50,8 @@ export async function signup(formData: FormData) {
     console.log('❌ Signup error:', error)
     redirect('/error')
   }
+  
+  // revalidatePath() clears Next.js cache for '/dashboard' to ensure fresh data after authentication
   revalidatePath('/dashboard', 'page')
   redirect('/dashboard')
 }
