@@ -46,7 +46,7 @@ export async function getBlogPost(slug: string){
   .single()
   
   if (error) {
-    console.error('Error fetching blog post:', error)
+ 
     return {data: null, error: error}
   }
 
@@ -61,4 +61,29 @@ export async function getBlogPost(slug: string){
   }
   
   return {data: postWithExcerpt, error: null}
+}
+
+export async function deleteBlogPost(slug: string) {
+  const supabase = await createClient()
+  
+  // First verify the post belongs to the current user
+  const { data: user } = await supabase.auth.getUser()
+  if (!user.user?.id) {
+    return { data: null, error: { message: 'User not authenticated' } }
+  }
+  
+  const { data, error } = await supabase
+    .from('blog_posts')
+    .delete()
+    .eq('slug', slug)
+    .eq('author_id', user.user.id)
+    .select()
+    .single()
+  
+  if (error) {
+    console.error('Error deleting blog post:', error)
+    return { data: null, error: error }
+  }
+  
+  return { data, error: null }
 }

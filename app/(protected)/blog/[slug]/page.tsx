@@ -1,5 +1,6 @@
-import { getBlogPost } from '@/utils/blog/queries'
-import { notFound } from 'next/navigation'
+import { getBlogPost, deleteBlogPost } from '@/utils/blog/queries'
+import { notFound, redirect } from 'next/navigation'
+import { revalidatePath } from 'next/cache'
 import Link from 'next/link'
 
 interface PageProps {
@@ -8,22 +9,26 @@ interface PageProps {
   }
 }
 
-export default async function BlogPostPage({ params }: PageProps) {
-  const { data: post, error } = await getBlogPost(params.slug)
+async function handleDeletePost(formData: FormData) {
+  'use server'
+  
+  const slug = formData.get('slug') as string
+  if (!slug) return
+  
+  const { data, error } = await deleteBlogPost(slug)
   
   if (error) {
-    return (
-      <div className="max-w-2xl mx-auto px-6 py-20">
-        <div className="text-center">
-          <h2 className="text-xl font-medium text-gray-900 mb-2">Error loading post</h2>
-          <p className="text-gray-600">Please try again later.</p>
-          <Link href="/blog" className="text-sm text-blue-600 hover:text-blue-500 mt-4 inline-block">
-            ← Back to blog
-          </Link>
-        </div>
-      </div>
-    )
+    console.error('Failed to delete post:', error)
+    return
   }
+  
+  revalidatePath('/blog')
+  redirect('/blog')
+}
+
+export default async function BlogPostPage({ params }: PageProps) {
+  const { data: post, error } = await getBlogPost(params.slug)
+ 
 
   if (!post) {
     notFound()
@@ -61,15 +66,19 @@ export default async function BlogPostPage({ params }: PageProps) {
           </div>
         </div>
 
-        {/* Actions */}
+                {/* Actions */}
         <div className="mt-12 pt-8 border-t border-gray-200">
           <div className="flex justify-end">
-            <button
-              type="button"
-              className="px-4 py-2 text-sm font-medium text-red-700 bg-white border border-red-300 rounded-md hover:bg-red-50 transition-colors"
-            >
-              Delete
-            </button>
+            <form action={handleDeletePost}>
+              <input type="hidden" name="slug" value={post.slug} />
+              <button
+                type="submit"
+                className="px-4 py-2 text-sm font-medium text-red-700 bg-white border border-red-300 rounded-md hover:bg-red-50 transition-colors"
+                
+              >
+                Delete
+              </button>
+            </form>
           </div>
         </div>
       </article>
