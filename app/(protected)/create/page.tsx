@@ -1,9 +1,29 @@
+import { createBlogPost } from '@/utils/blog/queries'
+import { redirect } from 'next/navigation'
+
 export default function CreatePage() {
     async function createPost(formData: FormData) {
         'use server'
         const title = formData.get('title') as string
         const content = formData.get('content') as string
-        console.log(title, content)
+        
+        // Basic validation
+        if (!title?.trim()) {
+            throw new Error('Title is required')
+        }
+        
+        if (!content?.trim()) {
+            throw new Error('Content is required')
+        }
+        
+        const { data, error } = await createBlogPost(title.trim(), content.trim())
+        
+        if (error) {
+            throw new Error('Failed to create blog post')
+        }
+        
+        // Redirect to the new blog post
+        redirect(`/blog/${data.slug}`)
     }
   return (
     <div className="min-h-screen flex items-center justify-center bg-white py-12 px-4 sm:px-6 lg:px-8">

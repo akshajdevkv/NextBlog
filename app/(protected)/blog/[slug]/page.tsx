@@ -27,7 +27,8 @@ async function handleDeletePost(formData: FormData) {
 }
 
 export default async function BlogPostPage({ params }: PageProps) {
-  const { data: post, error } = await getBlogPost(params.slug)
+    const slug = await params.slug
+  const { data: post, error } = await getBlogPost( slug)
  
 
   if (!post) {

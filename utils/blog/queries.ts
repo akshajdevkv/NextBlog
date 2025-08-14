@@ -87,3 +87,42 @@ export async function deleteBlogPost(slug: string) {
   
   return { data, error: null }
 }
+
+function generateSlug(title: string): string {
+  return title
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '') // Remove special characters
+    .replace(/[\s_-]+/g, '-') // Replace spaces and underscores with hyphens
+    .replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
+}
+
+export async function createBlogPost(title: string, content: string) {
+  const supabase = await createClient()
+  const { data: user } = await supabase.auth.getUser()
+  
+  if (!user.user?.id) {
+    return { data: null, error: { message: 'User not authenticated' } }
+  }
+
+  const slug = generateSlug(title)
+  
+  const { data, error } = await supabase
+    .from('blog_posts')
+    .insert({
+   
+      title,
+      content,
+      slug,
+      author_id: user.user.id
+    })
+    .select()
+    .single()
+  
+  if (error) {
+    console.error('Error creating blog post:', error)
+    return { data: null, error: error }
+  }
+  
+  return { data, error: null }
+}
