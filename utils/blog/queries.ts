@@ -12,7 +12,7 @@ export async function getBlogPosts(){
     slug,
     created_at,
     author_id
-  `)
+  `).eq('author_id', (await supabase.auth.getUser()).data.user?.id)
   .order('created_at', { ascending: false })
   
   if (error) {
